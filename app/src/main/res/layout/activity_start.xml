@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/toolbar"
+        android:gravity="center_horizontal"
+        android:padding="10dp"
+        >
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="ChatApp"
+        android:textSize="30sp"
+        android:textStyle="bold"
+         />
+
+    <Button
+        android:id="@+id/login_start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Login"
+        android:textColor="@color/TextColor"
+        android:background="@color/colorPrimaryDark"
+        android:layout_margin="10dp"/>
+    <Button
+        android:id="@+id/sign_start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Sign Up"
+        android:padding="10dp"
+        android:textColor="@color/TextColor"
+        android:background="@color/colorPrimaryDark"/>
+    </LinearLayout>
+
+
+</RelativeLayout>
