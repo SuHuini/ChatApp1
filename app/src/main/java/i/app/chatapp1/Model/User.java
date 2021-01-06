@@ -33,14 +33,6 @@ public class User {
         this.imageUrl = imageUrl;
     }
 
-    public String getname() {
-        return name;
-    }
-
-    public void setname(String name) {
-        this.name = name;
-    }
-
     public User(){
 
     }

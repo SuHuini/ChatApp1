@@ -1,6 +1,7 @@
 package i.app.chatapp1.Adapters;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +19,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
 
     private Context context;
     private List<User> mUsers;
+    String TAG = "Users";
 
     public UserAdapter(Context context, List<User> mUsers) {
         this.context = context;
@@ -28,19 +30,20 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.user_item, parent, false);
-        return null;
+        return new ViewHolder(view);
     }
-
-
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         User user = mUsers.get(position);
-        holder.username.setText(user.getname());
+        holder.username.setText(user.getName());
+        Log.d(TAG, "onBindViewHolderExecuted!!!");
+
     }
 
     @Override
     public int getItemCount() {
+
         return mUsers.size();
     }
 
@@ -48,7 +51,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
 
         public TextView username;
 
-        public ViewHolder(@NonNull View itemView, TextView username) {
+        public ViewHolder(@NonNull View itemView) {
             super(itemView);
             username = itemView.findViewById(R.id.username);
         }
