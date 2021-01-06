@@ -12,3 +12,4 @@
 /captures
 .externalNativeBuild
 .cxx
+app/src/main/java/i/app/chatapp1/Adapters/UsersAdapter.java
