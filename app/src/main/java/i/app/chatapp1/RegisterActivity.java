@@ -17,6 +17,8 @@ import android.widget.Toast;
 
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.AuthResult;
@@ -27,8 +29,11 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.Map;
+
+import i.app.chatapp1.Model.User;
 
 public class RegisterActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
@@ -60,20 +65,46 @@ public class RegisterActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
 
-        btn.setOnClickListener(new View.OnClickListener() {
+
+                btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 register();
+                //writeNewUser();
+               // nextActivity();
             }
         });
 
+
+    }
+    public static String sha256(String base) {
+        try{
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(base.getBytes("UTF-8"));
+            StringBuffer hexString = new StringBuffer();
+
+            for (int i = 0; i < hash.length; i++) {
+                String hex = Integer.toHexString(0xff & hash[i]);
+                if(hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+
+            return hexString.toString();
+        } catch(Exception ex){
+            throw new RuntimeException(ex);
+        }
     }
     private void register(){
 
         final String name = uname.getText().toString();
         final String email = uemail.getText().toString();
-        final String password = pass.getText().toString();
+        final String userPass = pass.getText().toString();
 
+        final String password =  sha256(userPass);
+        Log.d(TAG, "Hashed password" + password);
+
+           // String passw = pass.getText().toString();
+           // String newPass =  sha256(passw);
 
         //check if all fields are filled
         if (TextUtils.isEmpty(name) ||
@@ -83,12 +114,12 @@ public class RegisterActivity extends AppCompatActivity {
         else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             Toast.makeText(RegisterActivity.this, "Valid email required", Toast.LENGTH_LONG).show();
         }
-        else if (password.length() < 6) {
+        else if (userPass.length() < 6) {
             Toast.makeText(RegisterActivity.this, "Password should have more than 6 digits", Toast.LENGTH_LONG).show();
         }
         else {
             //register user
-            mAuth.createUserWithEmailAndPassword(email, password)
+            mAuth.createUserWithEmailAndPassword(email, userPass)
                     .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
@@ -96,35 +127,77 @@ public class RegisterActivity extends AppCompatActivity {
                                 // Sign in success, update UI with the signed-in user's information
                                 Log.d(TAG, "createUserWithEmail:success");
                                 FirebaseUser user = mAuth.getCurrentUser();
-                                Toast.makeText(RegisterActivity.this, "Registration successful", Toast.LENGTH_LONG).show();
-                                DocumentReference df = db.collection("chatUsers").document(user.getUid());
-                                Map<String, Object> userInfo = new HashMap<>();
+                                String userId = user.getUid();
+                                databaseClient = FirebaseDatabase.getInstance().getReference("ChatUsers");
+                                //updateUI(user);
+                                Log.d(TAG,  "RB user added");
+                                HashMap<String, String> hashMap = new HashMap<>();
+                                hashMap.put("id", userId);
+                                hashMap.put("name", name);
+                                hashMap.put("email", email);
+                                hashMap.put("password", userPass);
+                                hashMap.put("imageUrl", "default");
+                                databaseClient.push().setValue(hashMap);
+                                Log.d(TAG,  "writenewuser user added");
+                                writeNewUser(name, email, userPass);
+                                //nextActivity();
 
-                                userInfo.put("name", name);
-                                userInfo.put("email", email);
-                                userInfo.put("password", password);
-
-                                //userInfo.put("IsUser", "1");
-
-                                df.set(userInfo);
-
-                                Intent i = new Intent(RegisterActivity.this, MainActivity.class);
-                                startActivity(i);
-                                finish();
-                                Log.d(TAG, "saveuserdata");
                             } else {
                                 // If sign in fails, display a message to the user.
                                 Log.w(TAG, "createUserWithEmail:failure", task.getException());
                                 Toast.makeText(RegisterActivity.this, "Authentication failed.",
                                         Toast.LENGTH_SHORT).show();
-                                // updateUI(null);
+                                //updateUI(null);
                             }
+
+                            // ...
                         }
-
-                        // ...
-
                     });
         }
     }
+    private void writeNewUser(String name, String email, String password) {
+        //final String userId;
+//        final String name = uname.getText().toString();
+//        final String email = uemail.getText().toString();
+//        final String password = pass.getText().toString();
+        FirebaseUser user = mAuth.getCurrentUser();
+        //DocumentReference df = db.collection("chatUsers").document(user.getUid());
+        String userId = user.getUid();
+        Map<String, Object> userInfo = new HashMap<>();
+        userInfo.put("id", userId);
+        userInfo.put("name", name);
+        userInfo.put("email", email);
+        userInfo.put("password", password);
+        userInfo.put("imageUrl", "default");
+
+        //userInfo.put("IsUser", "1");
+        db.collection("chatUsers")
+                .add(userInfo)
+                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                    @Override
+                    public void onSuccess(DocumentReference documentReference) {
+                        Log.d(TAG, "DocumentSnapshot added with ID" + documentReference.getId());
+                        nextActivity();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Error adding document");
+                    }
+                });
+
+
+
+        Log.d(TAG, "saveuserdata");
+
+    }
+    private void nextActivity(){
+        Intent i = new Intent(RegisterActivity.this, StartActivity.class);
+        startActivity(i);
+        finish();
+        Log.d(TAG, "writenewuser save user data");
+    }
+
 
 }

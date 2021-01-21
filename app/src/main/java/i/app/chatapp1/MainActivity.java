@@ -65,16 +65,13 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("");
         //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-
         // uname = findViewById(R.id.user_name);
          username = findViewById(R.id.name);
-
         user = FirebaseAuth.getInstance().getCurrentUser();
         //reference = FirebaseDatabase.getInstance().getReference("Users");
         mAuth = FirebaseAuth.getInstance();
         fStore = FirebaseFirestore.getInstance();
-        uid = mAuth.getCurrentUser().getUid();
+        //uid = mAuth.getCurrentUser().getUid();
         FirebaseUser user = mAuth.getCurrentUser();
 
 
@@ -113,8 +110,6 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.logout:
-
-
                 mAuth.getInstance().signOut();
                 startActivity(new Intent(getApplicationContext(), StartActivity.class));
                 finish();

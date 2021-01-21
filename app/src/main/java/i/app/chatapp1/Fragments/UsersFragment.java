@@ -23,6 +23,11 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -40,12 +45,8 @@ import i.app.chatapp1.Adapters.UserAdapter;
 import i.app.chatapp1.Model.User;
 import i.app.chatapp1.R;
 
-
-
 public class UsersFragment extends Fragment {
-
     String TAG = "Users";
-
     private RecyclerView recyclerView;
     private UserAdapter userAdapter;
     private List<User> mUsers;
@@ -55,38 +56,25 @@ public class UsersFragment extends Fragment {
     String name;
     //TextView uemail;
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_users, container, false);
 
-
         recyclerView = view.findViewById(R.id.recycler_view);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-
         mUsers = new ArrayList<>();
         readUsers();
         return view;
-
     }
 
-
     public void readUsers(){
-        //final FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-//        FirebaseUser user = mAuth.getCurrentUser();
-       fStore = FirebaseFirestore.getInstance().collection("chatUsers");
-//        doc = fStore.document(user.getUid());
-//        doc.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-//            @Override
-//            public void onSuccess(DocumentSnapshot documentSnapshot) {
-//                name = documentSnapshot.getString("name");
-//                Log.d(TAG, "Name Retrieved" + name);
-//            }
-//        });
-
+        final FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+       // User user;
+        //DocumentReference doc = fStore.collection("chatUsers").document(user.getUid());
+        fStore = FirebaseFirestore.getInstance().collection("chatUsers");
         fStore.get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
@@ -94,20 +82,12 @@ public class UsersFragment extends Fragment {
                         if (task.isSuccessful()) {
                             mUsers.clear();
                             for (QueryDocumentSnapshot document : task.getResult()) {
-
                                 User user = document.toObject(User.class);
-                                mUsers.add(user);
-                                //assert user != null;
-                                //assert firebaseUser != null;
                                 //String name = user.getName();
-//                                if(user.getId().equals(firebaseUser.getUid())){
-//                                    mUsers.add(user);
-//                                }
+                                mUsers.add(user);
                                 Log.d(TAG, document.getId() + " => " + document.getData());
-
                                 userAdapter = new UserAdapter(getContext(), mUsers);
                                 recyclerView.setAdapter(userAdapter);
-
                             }
                         } else {
                             Log.d(TAG, "Error getting documents: ", task.getException());
@@ -115,8 +95,33 @@ public class UsersFragment extends Fragment {
                     }
                 });
 
-
     }
+    public void readChatUsers(){
+        final FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        FirebaseDatabase database;
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("ChatUsers");
+        ref.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                mUsers.clear();
+                for(DataSnapshot dataSnapshot: snapshot.getChildren()){
+                    User user = snapshot.getValue(User.class);
+                           mUsers.add(user);
+                            //assert user != null;
+                            //assert firebaseUser != null;
+                    //if(user.getId() != null && !user.getId().equals(firebaseUser.getUid())){         mUsers.add(user);                    }
+                    userAdapter = new UserAdapter(getContext(), mUsers);
+                    recyclerView.setAdapter(userAdapter);
+                }
+                //Log.d(TAG, user.getId() + " => " + document.getData())
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
 
 
 }
